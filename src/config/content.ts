@@ -11,7 +11,7 @@ export const content = {
   },
 
   hero: {
-    date: "10 • 08 • 2026",
+    date: "11 • 08 • 2026",
     heading: "For your 19th.",
     sub: "You said you didn't really see what was so special about today.",
     line: "So I wanted to show you what I see.",
@@ -132,7 +132,7 @@ export const content = {
   finale: {
     prelude: "One last thing.",
     phrase: "The sky is beautiful.",
-    name: "Happy birthday, Firdous.",
+    name: "Happy birthday, Morenikeji.",
     line: "19 looks beautiful on you.",
     enjoy: "Enjoy your day. \u2764\ufe0f",
     footer: "the sky is beautiful.",

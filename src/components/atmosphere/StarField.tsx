@@ -40,7 +40,8 @@ export default function StarField({ intensity = 1, className }: StarFieldProps) 
     let dpr = 1;
     let stars: Star[] = [];
     let raf = 0;
-    let running = true;
+    let onScreen = true;
+    let tabVisible = !document.hidden;
 
     const buildStars = () => {
       // Base density per megapixel, thinned on mobile.
@@ -110,17 +111,28 @@ export default function StarField({ intensity = 1, className }: StarFieldProps) 
     };
 
     const loop = (t: number) => {
-      if (!running) return;
       draw(t);
       raf = requestAnimationFrame(loop);
     };
 
+    // Only burn frames when this field is near the viewport AND the tab is
+    // visible. Every section mounts its own star canvas, so without this all
+    // nine loops run at once; gating keeps just the 1–2 on-screen ones alive.
+    const shouldRun = () => !reduced && onScreen && tabVisible;
+    const start = () => {
+      if (!raf && shouldRun()) raf = requestAnimationFrame(loop);
+    };
+    const stop = () => {
+      if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    };
+    const sync = () => (shouldRun() ? start() : stop());
+
     resize();
-    if (reduced) {
-      draw(0);
-    } else {
-      raf = requestAnimationFrame(loop);
-    }
+    draw(0); // paint one static frame so the sky is never blank
+    sync();
 
     let resizeTimer: number | undefined;
     const onResize = () => {
@@ -129,21 +141,25 @@ export default function StarField({ intensity = 1, className }: StarFieldProps) 
     };
     window.addEventListener("resize", onResize);
 
-    // Pause the loop when the tab is hidden to save cycles.
     const onVisibility = () => {
-      if (document.hidden) {
-        running = false;
-        cancelAnimationFrame(raf);
-      } else if (!reduced) {
-        running = true;
-        raf = requestAnimationFrame(loop);
-      }
+      tabVisible = !document.hidden;
+      sync();
     };
     document.addEventListener("visibilitychange", onVisibility);
 
+    // Pause the loop whenever the canvas scrolls out of view.
+    const io = new IntersectionObserver(
+      (entries) => {
+        onScreen = entries[0]?.isIntersecting ?? true;
+        sync();
+      },
+      { rootMargin: "200px 0px" }
+    );
+    io.observe(canvas);
+
     return () => {
-      running = false;
-      cancelAnimationFrame(raf);
+      stop();
+      io.disconnect();
       window.removeEventListener("resize", onResize);
       document.removeEventListener("visibilitychange", onVisibility);
       window.clearTimeout(resizeTimer);

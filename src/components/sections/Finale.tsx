@@ -4,6 +4,7 @@ import SkyBackdrop from "../atmosphere/SkyBackdrop";
 import StarField from "../atmosphere/StarField";
 import Moon from "../atmosphere/Moon";
 import CloudLayer from "../atmosphere/CloudLayer";
+import Celebration from "../atmosphere/Celebration";
 import { Reveal, WordReveal } from "../primitives/Reveal";
 import { GoldStar } from "../primitives/Ornaments";
 import { content } from "../../config/content";
@@ -28,29 +29,61 @@ export default function Finale({ onActive }: SectionProps) {
   return (
     <Chapter id="finale" onActive={onActive} minFull={false}>
       <div className="absolute inset-0" aria-hidden="true">
-        {/* A slowly shifting base tone: black -> midnight -> sapphire */}
-        <motion.div
+        {/* Slowly shifting base tone via cross-fading layers. Animating the
+            `background` property forces a full repaint each frame (the ending
+            stutter); cross-fading opacity is composited on the GPU instead. */}
+        <div
           className="absolute inset-0"
-          animate={
-            reduced
-              ? undefined
-              : {
-                  background: [
-                    "linear-gradient(180deg, #020308 0%, #050B1A 60%, #020308 100%)",
-                    "linear-gradient(180deg, #030713 0%, #0B1F4D 60%, #050B1A 100%)",
-                    "linear-gradient(180deg, #020308 0%, #0A2A5E 60%, #030916 100%)",
-                    "linear-gradient(180deg, #020308 0%, #050B1A 60%, #020308 100%)",
-                  ],
-                }
-          }
-          transition={{ duration: 32, repeat: Infinity, ease: "easeInOut" }}
+          style={{
+            background:
+              "linear-gradient(180deg, #020308 0%, #050B1A 60%, #020308 100%)",
+          }}
         />
+        {!reduced && (
+          <>
+            <motion.div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(180deg, #030713 0%, #0B1F4D 60%, #050B1A 100%)",
+                willChange: "opacity",
+              }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0, 1, 0] }}
+              transition={{
+                duration: 32,
+                repeat: Infinity,
+                ease: "easeInOut",
+                times: [0, 0.5, 1],
+              }}
+            />
+            <motion.div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(180deg, #020308 0%, #0A2A5E 60%, #030916 100%)",
+                willChange: "opacity",
+              }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0, 0, 1, 0] }}
+              transition={{
+                duration: 32,
+                repeat: Infinity,
+                ease: "easeInOut",
+                times: [0, 0.5, 0.75, 1],
+              }}
+            />
+          </>
+        )}
         <SkyBackdrop variant="deep" wine style={{ background: "transparent" }}>
           <CloudLayer intensity={0.5} />
           <StarField intensity={isMobile ? 1.1 : 1.5} />
           <Moon x={isMobile ? 0.72 : 0.6} y={0.22} size={isMobile ? 132 : 188} intensity={1} />
         </SkyBackdrop>
       </div>
+
+      {/* Full-party celebration — fires once the finale scrolls into view */}
+      <Celebration />
 
       <div
         className="relative z-10 mx-auto flex max-w-prose-wide flex-col items-center text-center"

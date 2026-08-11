@@ -57,9 +57,9 @@ export const content = {
     remember: "Do you remember?",
     phrase: "The sky is beautiful.",
     intro: [
-      "I never really told you why.",
-      "I just said it should be our little secret.",
-      "But this is why.",
+      "Just like I said before,",
+      "the sky is our little secret...",
+      "and this is why.",
     ],
     forever: "The sky will forever be beautiful.",
     times: ["Today.", "Tomorrow.", "And always."],

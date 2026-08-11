@@ -17,7 +17,8 @@ interface MoonProps {
 
 /**
  * A portrait framed as the moon: a circular photo with a crisp blue-to-wine
- * rim. No glow, no halo — it breathes very slowly to stay alive in the scene.
+ * rim. It breathes via opacity only — never a per-frame scale — because
+ * scaling a border-radius clip each frame shimmers on mobile GPUs.
  */
 export default function Moon({
   x = 0.72,
@@ -42,11 +43,15 @@ export default function Moon({
         height: size,
         opacity: intensity,
         pointerEvents: "none",
+        // Keep this disc on its own compositor layer so an animated ancestor
+        // (hero parallax / finale background) can't cause repaint bleed.
+        isolation: "isolate",
+        transform: "translateZ(0)",
       }}
     >
       <motion.div
         initial={false}
-        animate={reduced ? undefined : { scale: [1, 1.012, 1] }}
+        animate={reduced ? undefined : { opacity: [0.94, 1, 0.94] }}
         transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
         style={{
           position: "absolute",
@@ -55,6 +60,9 @@ export default function Moon({
           padding: rim,
           background:
             "linear-gradient(140deg, #2B5EA8 0%, #193B73 44%, #5C1830 72%, #4A1025 100%)",
+          transform: "translateZ(0)",
+          backfaceVisibility: "hidden",
+          WebkitBackfaceVisibility: "hidden",
         }}
       >
         <img
@@ -68,6 +76,8 @@ export default function Moon({
             objectPosition: "center 30%",
             borderRadius: "50%",
             display: "block",
+            transform: "translateZ(0)",
+            backfaceVisibility: "hidden",
           }}
         />
       </motion.div>

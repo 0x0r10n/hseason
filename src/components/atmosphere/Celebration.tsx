@@ -3,13 +3,12 @@ import { motion, useInView } from "framer-motion";
 import { usePrefersReducedMotion, useIsMobile } from "../../hooks/useMediaPrefs";
 
 /**
- * A "full party" celebration for the finale: an outward emoji burst plus
- * multicolor confetti glitter. Everything animates via transform/opacity only
- * (composited on the GPU) and only mounts once the finale scrolls into view,
- * so it stays smooth on phones. Fully disabled under reduced-motion.
+ * A "full party" celebration for the finale: multicolor confetti glitter that
+ * rains down. Animates via transform/opacity only (composited on the GPU) and
+ * only mounts once the finale scrolls into view, so it stays smooth on phones.
+ * Disabled under reduced-motion.
  */
 
-const EMOJIS = ["🎉", "🥳", "🎂", "🎈", "🎊", "✨", "💫", "🎁", "⭐", "💖", "🌟", "🥂"];
 const CONFETTI_COLORS = [
   "#F72585", // magenta
   "#FFD166", // yellow
@@ -39,27 +38,7 @@ export default function Celebration() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, amount: 0.35 });
 
-  const emojiCount = isMobile ? 12 : 22;
   const confettiCount = isMobile ? 22 : 48;
-
-  const bursts = useMemo(() => {
-    const rand = mulberry32(1337);
-    return new Array(emojiCount).fill(0).map((_, i) => {
-      const angle = (i / emojiCount) * Math.PI * 2 + (rand() - 0.5) * 0.5;
-      const dist = 28 + rand() * 24; // vmin
-      return {
-        id: i,
-        emoji: EMOJIS[Math.floor(rand() * EMOJIS.length)],
-        dx: Math.cos(angle) * dist,
-        dy: Math.sin(angle) * dist,
-        rot: (rand() - 0.5) * 180,
-        size: 1.6 + rand() * 1.6, // rem
-        delay: rand() * 0.5,
-        dur: 2 + rand() * 1.2,
-        repeatDelay: 1.8 + rand() * 2.4,
-      };
-    });
-  }, [emojiCount]);
 
   const confetti = useMemo(() => {
     const rand = mulberry32(9001);
@@ -78,25 +57,8 @@ export default function Celebration() {
   }, [confettiCount]);
 
   if (reduced) {
-    // A calm, static sprinkle so reduced-motion users still get a moment.
-    return (
-      <div
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          top: "20%",
-          left: 0,
-          right: 0,
-          textAlign: "center",
-          fontSize: "1.75rem",
-          opacity: 0.85,
-          pointerEvents: "none",
-          zIndex: 20,
-        }}
-      >
-        🎉 🥳 🎂 ✨ 🎊
-      </div>
-    );
+    // Confetti is motion-driven; under reduced-motion we simply show nothing.
+    return null;
   }
 
   return (
@@ -141,39 +103,6 @@ export default function Celebration() {
                 willChange: "transform, opacity",
               }}
             />
-          ))}
-
-          {/* Emoji burst radiating from above the name */}
-          {bursts.map((b) => (
-            <motion.span
-              key={`e-${b.id}`}
-              initial={{ opacity: 0, scale: 0.2, x: "-50%", y: "-50%" }}
-              animate={{
-                opacity: [0, 1, 1, 0],
-                scale: [0.2, 1.25, 1, 0.85],
-                x: ["-50%", `calc(-50% + ${b.dx}vmin)`],
-                y: ["-50%", `calc(-50% + ${b.dy}vmin)`],
-                rotate: [0, b.rot],
-              }}
-              transition={{
-                duration: b.dur,
-                delay: b.delay,
-                repeat: Infinity,
-                repeatDelay: b.repeatDelay,
-                ease: "easeOut",
-              }}
-              style={{
-                position: "absolute",
-                left: "50%",
-                top: "24%",
-                fontSize: `${b.size}rem`,
-                lineHeight: 1,
-                willChange: "transform, opacity",
-                filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.35))",
-              }}
-            >
-              {b.emoji}
-            </motion.span>
           ))}
         </>
       )}

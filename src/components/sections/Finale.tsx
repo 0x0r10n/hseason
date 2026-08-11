@@ -2,7 +2,6 @@ import { motion } from "framer-motion";
 import Chapter from "../primitives/Chapter";
 import SkyBackdrop from "../atmosphere/SkyBackdrop";
 import StarField from "../atmosphere/StarField";
-import Moon from "../atmosphere/Moon";
 import CloudLayer from "../atmosphere/CloudLayer";
 import Celebration from "../atmosphere/Celebration";
 import { Reveal, WordReveal } from "../primitives/Reveal";
@@ -78,8 +77,38 @@ export default function Finale({ onActive }: SectionProps) {
         <SkyBackdrop variant="deep" wine style={{ background: "transparent" }}>
           <CloudLayer intensity={0.5} />
           <StarField intensity={isMobile ? 1.1 : 1.5} />
-          <Moon x={isMobile ? 0.72 : 0.6} y={0.22} size={isMobile ? 132 : 188} intensity={1} />
         </SkyBackdrop>
+
+        {/* Her photo, filling the last page as a soft blurred backdrop. */}
+        <div
+          className="absolute inset-0 overflow-hidden"
+          style={{ pointerEvents: "none" }}
+        >
+          <img
+            src="/her.jpg"
+            alt=""
+            draggable={false}
+            style={{
+              position: "absolute",
+              inset: `-${isMobile ? 40 : 64}px`,
+              width: `calc(100% + ${isMobile ? 80 : 128}px)`,
+              height: `calc(100% + ${isMobile ? 80 : 128}px)`,
+              objectFit: "cover",
+              objectPosition: "center 28%",
+              filter: `blur(${isMobile ? 26 : 40}px)`,
+              transform: "scale(1.08) translateZ(0)",
+              opacity: 0.5,
+            }}
+          />
+          {/* Scrim: darken + wine/blue undertone so the text stays readable. */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(120% 90% at 50% 40%, rgba(2,3,8,0.35) 0%, rgba(2,3,8,0.72) 62%, rgba(2,3,8,0.9) 100%)",
+            }}
+          />
+        </div>
       </div>
 
       {/* Full-party celebration — fires once the finale scrolls into view */}
